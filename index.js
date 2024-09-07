@@ -3,12 +3,25 @@ const boxB = document.getElementById('box-b');
 const boxC = document.getElementById('box-c');
 const message = document.getElementById('message');
 const shapes = document.querySelectorAll('.shape');
-const gridCells = document.querySelectorAll('#box-b .grid-cell');
+const gridCellsA = document.querySelectorAll('#box-a .grid-cell');
+const gridCellsB = document.querySelectorAll('#box-b .grid-cell');
 
 let draggedShape = null;
 let attempts = 0;
 const maxAttempts = 3;
-const correctCell = 4; 
+let correctCell;
+
+function initializeGame() {
+    gridCellsA.forEach(cell => cell.innerHTML = '');
+    gridCellsB.forEach(cell => cell.innerHTML = '');
+    attempts = 0;
+
+    
+    correctCell = Math.floor(Math.random() * 9);
+    const referenceShape = document.createElement('div');
+    referenceShape.className = 'reference-shape';
+    gridCellsA[correctCell].appendChild(referenceShape);
+}
 
 shapes.forEach(shape => {
     shape.addEventListener('dragstart', (e) => {
@@ -16,7 +29,7 @@ shapes.forEach(shape => {
     });
 });
 
-gridCells.forEach(cell => {
+gridCellsB.forEach(cell => {
     cell.addEventListener('dragover', (e) => {
         e.preventDefault();
     });
@@ -35,14 +48,21 @@ gridCells.forEach(cell => {
 function checkPlacement(cellIndex, cell, shape) {
     if (cellIndex === correctCell) {
         showMessage('LEVEL PASSED');
+        setTimeout(() => {
+            initializeGame();
+        }, 2000);
     } else {
         attempts++;
         if (attempts >= maxAttempts) {
             showMessage('LEVEL FAILED');
+            setTimeout(() => {
+                initializeGame();
+            }, 2000);
+        } else {
+            setTimeout(() => {
+                cell.removeChild(shape);
+            }, 2000);
         }
-        setTimeout(() => {
-            cell.removeChild(shape);
-        }, 2000);
     }
 }
 
@@ -53,3 +73,5 @@ function showMessage(text) {
         message.style.display = 'none';
     }, 2000);
 }
+
+initializeGame();
