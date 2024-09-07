@@ -137,6 +137,21 @@
                 { ...gridPositions[4], type: 'triangle', size: unit, angle: 0, color: color(0) }
             ];
         }
+        
+        function clearShapes() {
+            createCanvas(windowWidth, windowHeight);
+            let center = { x: width / 2, y: height / 2 };
+
+            shapes = [
+                {  },
+                {  },
+                {  },
+                {  },
+                {  },
+                {  },
+                {  }
+            ];
+        }
 
         function draw() {
             background(240);
@@ -230,6 +245,7 @@
                 if (timeLeft <= 0) {
                     clearInterval(timer);
                     revealTargetColors();
+                    clearShapes();
                 }
             }, 1000);
         }
