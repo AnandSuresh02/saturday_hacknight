@@ -11,7 +11,7 @@
             overflow: hidden;
             background-color: #f0f0f0;
         }
-
+        
         #instruction-popup {
             position: fixed;
             top: 0;
@@ -53,22 +53,21 @@
             color: white;
             border-radius: 5px;
         }
-
+        
         #timer {
             position: absolute;
             top: 10px;
             left: 50%;
             transform: translateX(-50%);
             font-size: 24px;
-            font-weight: bold;
+             font-weight: bold;
         }
-
         #score {
             position: absolute;
             top: 10px;
             right: 10px;
             font-size: 24px;
-            font-weight: bold;
+             font-weight: bold;
         }
     </style>
 </head>
@@ -88,8 +87,7 @@
             <button id="start-button">START NOW</button>
         </div>
     </div>
-
-    <div id="timer"></div>
+    <div id="timer">2:00</div>
     <div id="score">Score: 0/7</div>
 
     <script>
@@ -97,69 +95,62 @@
         let targetShapes = [];
         let selectedShape = null;
         let offsetX, offsetY;
-        let unit = 100; // 1 unit = 100 pixels
+        let unit = 100; 
         let score = 0;
         let timer;
-        let timeLeft = 120; // 2 minutes
+        let timeLeft = 120; 
 
         function setup() {
             createCanvas(windowWidth, windowHeight);
-            initShapes();
-            noLoop(); 
-        }
-
-        function initShapes() {
             let center = { x: width / 2, y: height / 2 };
 
             shapes = [
-                { x: center.x - unit * 3, y: center.y - unit * 2, type: 'triangle', size: unit * 2, angle: 45, color: color(34, 139, 34) },
-                { x: center.x - unit * 3, y: center.y + unit * 2, type: 'triangle', size: unit * 2, angle: 225, color: color(220, 20, 60) },
-                { x: center.x - unit * 3, y: center.y, type: 'triangle', size: unit * Math.sqrt(2), angle: 45, color: color(0, 0, 139) },
-                { x: center.x + unit * 3, y: center.y - unit, type: 'triangle', size: unit, angle: 45, color: color(148, 0, 211) },
-                { x: center.x + unit * 3, y: center.y + unit, type: 'triangle', size: unit, angle: -135, color: color(220, 20, 60) },
-                { x: center.x + unit * 3, y: center.y, type: 'square', size: unit * Math.sqrt(2), angle: 45, color: color(255, 215, 0) },
-                { x: center.x, y: center.y - unit * 3, type: 'parallelogram', size: unit, angle: -45, color: color(0, 0, 205) }
+                { x: center.x - unit * 4, y: center.y - unit * 2, type: 'triangle', size: unit * 2, angle: 45, color: color(34, 139, 34) },
+                { x: center.x - unit * 4, y: center.y + unit * 2, type: 'triangle', size: unit * 2, angle: 225, color: color(220, 20, 60) },
+                { x: center.x - unit * 4, y: center.y, type: 'triangle', size: unit * Math.sqrt(2), angle: 45, color: color(0, 0, 139) },
+                { x: center.x + unit * 4, y: center.y - unit, type: 'triangle', size: unit, angle: 45, color: color(148, 0, 211) },
+                { x: center.x + unit * 4, y: center.y + unit, type: 'triangle', size: unit, angle: -135, color: color(220, 20, 60) },
+                { x: center.x + unit * 4, y: center.y, type: 'square', size: unit * Math.sqrt(2), angle: 45, color: color(255, 215, 0) },
+                { x: center.x, y: center.y + unit * 4, type: 'parallelogram', size: unit, angle: -45, color: color(0, 0, 205) }
             ];
 
-            generateTargetShapes(center);
+            generateRandomTargetShapes(center);
+            startTimer();
         }
 
-        function generateTargetShapes(center) {
-            let positions = [
-                { x: center.x - unit * 2, y: center.y - unit * 2 },
-                { x: center.x - unit * 2, y: center.y + unit * 2 },
-                { x: center.x - unit * 2, y: center.y },
-                { x: center.x + unit * 2, y: center.y - unit },
-                { x: center.x + unit * 2, y: center.y + unit },
-                { x: center.x + unit * 2, y: center.y },
-                { x: center.x, y: center.y - unit * 2 }
+        function generateRandomTargetShapes(center) {
+            let gridPositions = [
+                { x: center.x - unit, y: center.y - unit },
+                { x: center.x - unit, y: center.y + unit },
+                { x: center.x + unit, y: center.y - unit },
+                { x: center.x + unit, y: center.y + unit },
+                { x: center.x, y: center.y },
             ];
 
-            targetShapes = shapes.map((shape, index) => ({
-                ...shape,
-                x: positions[index].x,
-                y: positions[index].y,
-                angle: floor(random(8)) * 45,
-                color: color(0),
-                locked: false
-            }));
+            shuffleArray(gridPositions);
+
+            targetShapes = [
+                { ...gridPositions[0], type: 'triangle', size: unit * 2, angle: 0, color: color(0) },
+                { ...gridPositions[1], type: 'triangle', size: unit * 2, angle: 180, color: color(0) },
+                { ...gridPositions[2], type: 'square', size: unit * Math.sqrt(2), angle: 0, color: color(0) },
+                { ...gridPositions[3], type: 'parallelogram', size: unit, angle: 0, color: color(0) },
+                { ...gridPositions[4], type: 'triangle', size: unit, angle: 0, color: color(0) }
+            ];
         }
 
         function draw() {
             background(240);
 
-            // Draw target shapes
             for (let shape of targetShapes) {
                 drawShape(shape);
             }
 
-            // Draw movable shapes
             for (let shape of shapes) {
                 drawShape(shape);
             }
 
-            // Update timer
-            updateTimer();
+            document.getElementById('timer').innerText = formatTime(timeLeft);
+            document.getElementById('score').innerText = `Score: ${score}/7`;
         }
 
         function drawShape(shape) {
@@ -228,44 +219,51 @@
                     shape.y = targetShape.y;
                     shape.angle = targetShape.angle;
                     shape.locked = true;
-                    targetShape.color = shape.color;
                     score++;
-                    document.getElementById('score').innerText = `Score: ${score}/7`;
                 }
             }
         }
 
-        function updateTimer() {
-            if (frameCount % 60 === 0 && timeLeft > 0) {
+        function startTimer() {
+            timer = setInterval(() => {
                 timeLeft--;
-                let minutes = floor(timeLeft / 60);
-                let seconds = timeLeft % 60;
-                document.getElementById('timer').innerText = `Time: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-            }
-
-            if (timeLeft === 0) {
-                noLoop();
-                revealSolution();
-            }
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    revealTargetColors();
+                }
+            }, 1000);
         }
 
-        function revealSolution() {
+        function formatTime(seconds) {
+            let minutes = Math.floor(seconds / 60);
+            let secs = seconds % 60;
+            return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+
+        function revealTargetColors() {
             for (let i = 0; i < targetShapes.length; i++) {
-                targetShapes[i].color = shapes[i].color;
+                targetShapes[i].color = shapes.find(shape => shape.type === targetShapes[i].type).color;
             }
-            redraw();
-            alert("Time's up! Here's the correct solution.");
         }
 
+        function windowResized() {
+            resizeCanvas(windowWidth, windowHeight);
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                let j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
         window.addEventListener("load", () => {
             const popup = document.getElementById("instruction-popup");
             const startButton = document.getElementById("start-button");
-
             startButton.addEventListener("click", () => {
                 popup.style.display = "none";
                 loop(); 
             });
-        });
+        });    
     </script>
 </body>
 </html>
