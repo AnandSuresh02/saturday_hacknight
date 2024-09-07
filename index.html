@@ -3,50 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tangram Puzzle</title>
+    <title>Tangram</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
     <style>
         body {
             margin: 0;
             overflow: hidden;
             background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+        #timer {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 24px;
+            color: #333;
+        }
+        #score {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 24px;
+            color: #333;
         }
     </style>
 </head>
 <body>
+    <div id="timer">2:00</div>
+    <div id="score">Score: 0/7</div>
+
     <script>
         let shapes = [];
+        let targetShapes = [];
         let selectedShape = null;
         let offsetX, offsetY;
-        let unit = 100; // 1 unit = 100 pixels
+        let unit = 100; 
+        let score = 0;
+        let timer;
+        let timeLeft = 120; 
 
         function setup() {
             createCanvas(windowWidth, windowHeight);
             let center = { x: width / 2, y: height / 2 };
 
             shapes = [
-                // Large green triangle 
-                { x: center.x - unit, y: center.y - unit, type: 'triangle', size: unit * 2, angle: 45, color: color(34, 139, 34) },
-                // Large red triangle 
-                { x: center.x + unit, y: center.y + unit, type: 'triangle', size: unit * 2, angle: 225, color: color(220, 20, 60) },
-                // Medium blue triangle
-                { x: center.x, y: center.y + unit, type: 'triangle', size: unit * Math.sqrt(2), angle: 45, color: color(0, 0, 139) },
-                // Small purple triangle
-                { x: center.x - unit, y: center.y, type: 'triangle', size: unit, angle: 45, color: color(148, 0, 211) },
-                // Small red triangle
-                { x: center.x, y: center.y - unit, type: 'triangle', size: unit, angle: -135, color: color(220, 20, 60) },
-                // Yellow square
-                { x: center.x, y: center.y, type: 'square', size: unit * Math.sqrt(2), angle: 45, color: color(255, 215, 0) },
-                // Blue parallelogram
-                { x: center.x + unit, y: center.y - unit, type: 'parallelogram', size: unit, angle: -45, color: color(0, 0, 205) }
+                { x: center.x - unit * 4, y: center.y - unit * 2, type: 'triangle', size: unit * 2, angle: 45, color: color(34, 139, 34) },
+                { x: center.x - unit * 4, y: center.y + unit * 2, type: 'triangle', size: unit * 2, angle: 225, color: color(220, 20, 60) },
+                { x: center.x - unit * 4, y: center.y, type: 'triangle', size: unit * Math.sqrt(2), angle: 45, color: color(0, 0, 139) },
+                { x: center.x + unit * 4, y: center.y - unit, type: 'triangle', size: unit, angle: 45, color: color(148, 0, 211) },
+                { x: center.x + unit * 4, y: center.y + unit, type: 'triangle', size: unit, angle: -135, color: color(220, 20, 60) },
+                { x: center.x + unit * 4, y: center.y, type: 'square', size: unit * Math.sqrt(2), angle: 45, color: color(255, 215, 0) },
+                { x: center.x, y: center.y + unit * 4, type: 'parallelogram', size: unit, angle: -45, color: color(0, 0, 205) }
+            ];
+
+            generateRandomTargetShapes(center);
+            startTimer();
+        }
+
+        function generateRandomTargetShapes(center) {
+            let gridPositions = [
+                { x: center.x - unit, y: center.y - unit },
+                { x: center.x - unit, y: center.y + unit },
+                { x: center.x + unit, y: center.y - unit },
+                { x: center.x + unit, y: center.y + unit },
+                { x: center.x, y: center.y },
+            ];
+
+            shuffleArray(gridPositions);
+
+            targetShapes = [
+                { ...gridPositions[0], type: 'triangle', size: unit * 2, angle: 0, color: color(0) },
+                { ...gridPositions[1], type: 'triangle', size: unit * 2, angle: 180, color: color(0) },
+                { ...gridPositions[2], type: 'square', size: unit * Math.sqrt(2), angle: 0, color: color(0) },
+                { ...gridPositions[3], type: 'parallelogram', size: unit, angle: 0, color: color(0) },
+                { ...gridPositions[4], type: 'triangle', size: unit, angle: 0, color: color(0) }
             ];
         }
 
         function draw() {
             background(240);
+
+            for (let shape of targetShapes) {
+                drawShape(shape);
+            }
+
             for (let shape of shapes) {
                 drawShape(shape);
             }
+
+            document.getElementById('timer').innerText = formatTime(timeLeft);
+            document.getElementById('score').innerText = `Score: ${score}/7`;
         }
 
         function drawShape(shape) {
@@ -56,21 +103,12 @@
             fill(shape.color);
             noStroke();
             if (shape.type === 'triangle') {
-                triangle(
-                    0, -shape.size, 
-                    -shape.size, shape.size, 
-                    shape.size, shape.size
-                );
+                triangle(0, -shape.size, -shape.size, shape.size, shape.size, shape.size);
             } else if (shape.type === 'square') {
                 rectMode(CENTER);
                 square(0, 0, shape.size);
             } else if (shape.type === 'parallelogram') {
-                quad(
-                    -shape.size, shape.size / 2, 
-                    0, -shape.size / 2, 
-                    shape.size, -shape.size / 2, 
-                    0, shape.size / 2
-                );
+                quad(-shape.size, shape.size / 2, 0, -shape.size / 2, shape.size, -shape.size / 2, 0, shape.size / 2);
             }
             pop();
         }
@@ -78,7 +116,7 @@
         function mousePressed() {
             for (let i = shapes.length - 1; i >= 0; i--) {
                 let shape = shapes[i];
-                if (dist(mouseX, mouseY, shape.x, shape.y) < shape.size) {
+                if (!shape.locked && dist(mouseX, mouseY, shape.x, shape.y) < shape.size) {
                     selectedShape = shape;
                     offsetX = mouseX - shape.x;
                     offsetY = mouseY - shape.y;
@@ -97,21 +135,69 @@
         }
 
         function mouseReleased() {
+            if (selectedShape) {
+                checkPlacement(selectedShape);
+            }
             selectedShape = null;
         }
 
         function keyPressed() {
-            if (selectedShape) {
+            if (selectedShape && !selectedShape.locked) {
                 if (keyCode === LEFT_ARROW) {
                     selectedShape.angle = (selectedShape.angle - 45 + 360) % 360;
                 } else if (keyCode === RIGHT_ARROW) {
                     selectedShape.angle = (selectedShape.angle + 45) % 360;
                 }
+                checkPlacement(selectedShape);
+            }
+        }
+
+        function checkPlacement(shape) {
+            let targetShape = targetShapes.find(t => t.type === shape.type && t.size === shape.size);
+            if (targetShape) {
+                let distanceOK = dist(shape.x, shape.y, targetShape.x, targetShape.y) < unit / 4;
+                let angleOK = abs(shape.angle - targetShape.angle) % 360 < 5 || abs(shape.angle - targetShape.angle) % 360 > 355;
+                if (distanceOK && angleOK) {
+                    shape.x = targetShape.x;
+                    shape.y = targetShape.y;
+                    shape.angle = targetShape.angle;
+                    shape.locked = true;
+                    score++;
+                }
+            }
+        }
+
+        function startTimer() {
+            timer = setInterval(() => {
+                timeLeft--;
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    revealTargetColors();
+                }
+            }, 1000);
+        }
+
+        function formatTime(seconds) {
+            let minutes = Math.floor(seconds / 60);
+            let secs = seconds % 60;
+            return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+
+        function revealTargetColors() {
+            for (let i = 0; i < targetShapes.length; i++) {
+                targetShapes[i].color = shapes.find(shape => shape.type === targetShapes[i].type).color;
             }
         }
 
         function windowResized() {
             resizeCanvas(windowWidth, windowHeight);
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                let j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
         }
     </script>
 </body>
