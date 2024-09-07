@@ -3,42 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Drag and Drop Shape Game</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Tangram Puzzle</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #f0f0f0;
+        }
+    </style>
 </head>
 <body>
-    <div class="game-container">
-        <div id="box-a" class="box">
-            <div class="grid-cell" data-cell="0"></div>
-            <div class="grid-cell" data-cell="1"></div>
-            <div class="grid-cell" data-cell="2"></div>
-            <div class="grid-cell" data-cell="3"></div>
-            <div class="grid-cell" data-cell="4"></div>
-            <div class="grid-cell" data-cell="5"></div>
-            <div class="grid-cell" data-cell="6"></div>
-            <div class="grid-cell" data-cell="7"></div>
-            <div class="grid-cell" data-cell="8"></div>
-        </div>
-        <div id="box-b" class="box">
-            <div class="grid-cell" data-cell="0"></div>
-            <div class="grid-cell" data-cell="1"></div>
-            <div class="grid-cell" data-cell="2"></div>
-            <div class="grid-cell" data-cell="3"></div>
-            <div class="grid-cell" data-cell="4"></div>
-            <div class="grid-cell" data-cell="5"></div>
-            <div class="grid-cell" data-cell="6"></div>
-            <div class="grid-cell" data-cell="7"></div>
-            <div class="grid-cell" data-cell="8"></div>
-        </div>
-        <div id="box-c" class="box">
-            <div class="shape" draggable="true" data-shape="square"></div>
-            <div class="shape" draggable="true" data-shape="circle"></div>
-            <div class="shape" draggable="true" data-shape="triangle"></div>
-            <div class="shape" draggable="true" data-shape="rectangle"></div>
-            <div class="shape" draggable="true" data-shape="diamond"></div>
-        </div>
-    </div>
-    <div id="message"></div>
-    <script src="index.js"></script>
+    <script>
+        let shapes = [];
+        let selectedShape = null;
+        let offsetX, offsetY;
+        let unit = 100; // 1 unit = 100 pixels
+
+        function setup() {
+            createCanvas(windowWidth, windowHeight);
+            let center = { x: width / 2, y: height / 2 };
+
+            shapes = [
+                // Large green triangle 
+                { x: center.x - unit, y: center.y - unit, type: 'triangle', size: unit * 2, angle: 45, color: color(34, 139, 34) },
+                // Large red triangle 
+                { x: center.x + unit, y: center.y + unit, type: 'triangle', size: unit * 2, angle: 225, color: color(220, 20, 60) },
+                // Medium blue triangle
+                { x: center.x, y: center.y + unit, type: 'triangle', size: unit * Math.sqrt(2), angle: 45, color: color(0, 0, 139) },
+                // Small purple triangle
+                { x: center.x - unit, y: center.y, type: 'triangle', size: unit, angle: 45, color: color(148, 0, 211) },
+                // Small red triangle
+                { x: center.x, y: center.y - unit, type: 'triangle', size: unit, angle: -135, color: color(220, 20, 60) },
+                // Yellow square
+                { x: center.x, y: center.y, type: 'square', size: unit * Math.sqrt(2), angle: 45, color: color(255, 215, 0) },
+                // Blue parallelogram
+                { x: center.x + unit, y: center.y - unit, type: 'parallelogram', size: unit, angle: -45, color: color(0, 0, 205) }
+            ];
+        }
+
+        function draw() {
+            background(240);
+            for (let shape of shapes) {
+                drawShape(shape);
+            }
+        }
+
+        function drawShape(shape) {
+            push();
+            translate(shape.x, shape.y);
+            rotate(radians(shape.angle));
+            fill(shape.color);
+            noStroke();
+            if (shape.type === 'triangle') {
+                triangle(
+                    0, -shape.size, 
+                    -shape.size, shape.size, 
+                    shape.size, shape.size
+                );
+            } else if (shape.type === 'square') {
+                rectMode(CENTER);
+                square(0, 0, shape.size);
+            } else if (shape.type === 'parallelogram') {
+                quad(
+                    -shape.size, shape.size / 2, 
+                    0, -shape.size / 2, 
+                    shape.size, -shape.size / 2, 
+                    0, shape.size / 2
+                );
+            }
+            pop();
+        }
+
+        function mousePressed() {
+            for (let i = shapes.length - 1; i >= 0; i--) {
+                let shape = shapes[i];
+                if (dist(mouseX, mouseY, shape.x, shape.y) < shape.size) {
+                    selectedShape = shape;
+                    offsetX = mouseX - shape.x;
+                    offsetY = mouseY - shape.y;
+                    shapes.splice(i, 1);
+                    shapes.push(shape);
+                    break;
+                }
+            }
+        }
+
+        function mouseDragged() {
+            if (selectedShape) {
+                selectedShape.x = mouseX - offsetX;
+                selectedShape.y = mouseY - offsetY;
+            }
+        }
+
+        function mouseReleased() {
+            selectedShape = null;
+        }
+
+        function keyPressed() {
+            if (selectedShape) {
+                if (keyCode === LEFT_ARROW) {
+                    selectedShape.angle = (selectedShape.angle - 45 + 360) % 360;
+                } else if (keyCode === RIGHT_ARROW) {
+                    selectedShape.angle = (selectedShape.angle + 45) % 360;
+                }
+            }
+        }
+
+        function windowResized() {
+            resizeCanvas(windowWidth, windowHeight);
+        }
+    </script>
 </body>
 </html>
