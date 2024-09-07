@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drag and Drop Shape Game</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="game-container">
+        <div id="box-a" class="box">
+            <div class="grid-cell"></div>
+            <div class="grid-cell"></div>
+            <div class="grid-cell"></div>
+            <div class="grid-cell"></div>
+            <div class="grid-cell"><div class="reference-shape"></div></div>
+            <div class="grid-cell"></div>
+            <div class="grid-cell"></div>
+            <div class="grid-cell"></div>
+            <div class="grid-cell"></div>
+        </div>
+        <div id="box-b" class="box">
+            <div class="grid-cell" data-cell="0"></div>
+            <div class="grid-cell" data-cell="1"></div>
+            <div class="grid-cell" data-cell="2"></div>
+            <div class="grid-cell" data-cell="3"></div>
+            <div class="grid-cell" data-cell="4"></div>
+            <div class="grid-cell" data-cell="5"></div>
+            <div class="grid-cell" data-cell="6"></div>
+            <div class="grid-cell" data-cell="7"></div>
+            <div class="grid-cell" data-cell="8"></div>
+        </div>
+        <div id="box-c" class="box">
+            <div class="shape" draggable="true" data-shape="square"></div>
+            <div class="shape" draggable="true" data-shape="circle"></div>
+            <div class="shape" draggable="true" data-shape="triangle"></div>
+            <div class="shape" draggable="true" data-shape="rectangle"></div>
+            <div class="shape" draggable="true" data-shape="diamond"></div>
+        </div>
+    </div>
+    <div id="message"></div>
+    <script src="index.js"></script>
+</body>
+</html>
