@@ -3,34 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tangram</title>
+    <title>Tangram Puzzle Game</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
     <style>
         body {
             margin: 0;
             overflow: hidden;
             background-color: #f0f0f0;
-            font-family: Arial, sans-serif;
         }
+
+        #instruction-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+
+        #popup-content {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: left;
+            width: 400px;
+            max-width: 80%;
+        }
+
+        #popup-content h2 {
+            text-align: center;
+        }
+
+        #popup-content ul {
+            padding-left: 20px;
+        }
+
+        #start-button {
+            display: block;
+            margin: 20px auto 0;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 5px;
+        }
+
         #timer {
             position: absolute;
             top: 10px;
             left: 50%;
             transform: translateX(-50%);
             font-size: 24px;
-            color: #333;
+            font-weight: bold;
         }
+
         #score {
             position: absolute;
             top: 10px;
-            right: 20px;
+            right: 10px;
             font-size: 24px;
-            color: #333;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
-    <div id="timer">2:00</div>
+    <div id="instruction-popup">
+        <div id="popup-content">
+            <h2>Instructions</h2>
+            <p>Objective: Drag and drop the colored shapes into the matching black shapes on the grid.</p>
+            <p><strong>Controls:</strong></p>
+            <ul>
+                <li>Drag the colored shapes with your mouse to move them.</li>
+                <li>Use the left and right arrow keys to rotate the shapes.</li>
+            </ul>
+            <p><strong>Scoring:</strong> For every correctly placed shape, your score will increase out of 7. The score is displayed in the top right corner.</p>
+            <p><strong>Timer:</strong> You have 2 minutes to complete the puzzle. The timer is displayed at the top center. When the time runs out, the correct colors will appear on the black shapes.</p>
+            <p><strong>Winning:</strong> Successfully match all colored shapes to the black shapes before time runs out!</p>
+            <button id="start-button">START NOW</button>
+        </div>
+    </div>
+
+    <div id="timer"></div>
     <div id="score">Score: 0/7</div>
 
     <script>
@@ -38,62 +97,69 @@
         let targetShapes = [];
         let selectedShape = null;
         let offsetX, offsetY;
-        let unit = 100; 
+        let unit = 100; // 1 unit = 100 pixels
         let score = 0;
         let timer;
-        let timeLeft = 120; 
+        let timeLeft = 120; // 2 minutes
 
         function setup() {
             createCanvas(windowWidth, windowHeight);
+            initShapes();
+            noLoop(); 
+        }
+
+        function initShapes() {
             let center = { x: width / 2, y: height / 2 };
 
             shapes = [
-                { x: center.x - unit * 4, y: center.y - unit * 2, type: 'triangle', size: unit * 2, angle: 45, color: color(34, 139, 34) },
-                { x: center.x - unit * 4, y: center.y + unit * 2, type: 'triangle', size: unit * 2, angle: 225, color: color(220, 20, 60) },
-                { x: center.x - unit * 4, y: center.y, type: 'triangle', size: unit * Math.sqrt(2), angle: 45, color: color(0, 0, 139) },
-                { x: center.x + unit * 4, y: center.y - unit, type: 'triangle', size: unit, angle: 45, color: color(148, 0, 211) },
-                { x: center.x + unit * 4, y: center.y + unit, type: 'triangle', size: unit, angle: -135, color: color(220, 20, 60) },
-                { x: center.x + unit * 4, y: center.y, type: 'square', size: unit * Math.sqrt(2), angle: 45, color: color(255, 215, 0) },
-                { x: center.x, y: center.y + unit * 4, type: 'parallelogram', size: unit, angle: -45, color: color(0, 0, 205) }
+                { x: center.x - unit * 3, y: center.y - unit * 2, type: 'triangle', size: unit * 2, angle: 45, color: color(34, 139, 34) },
+                { x: center.x - unit * 3, y: center.y + unit * 2, type: 'triangle', size: unit * 2, angle: 225, color: color(220, 20, 60) },
+                { x: center.x - unit * 3, y: center.y, type: 'triangle', size: unit * Math.sqrt(2), angle: 45, color: color(0, 0, 139) },
+                { x: center.x + unit * 3, y: center.y - unit, type: 'triangle', size: unit, angle: 45, color: color(148, 0, 211) },
+                { x: center.x + unit * 3, y: center.y + unit, type: 'triangle', size: unit, angle: -135, color: color(220, 20, 60) },
+                { x: center.x + unit * 3, y: center.y, type: 'square', size: unit * Math.sqrt(2), angle: 45, color: color(255, 215, 0) },
+                { x: center.x, y: center.y - unit * 3, type: 'parallelogram', size: unit, angle: -45, color: color(0, 0, 205) }
             ];
 
-            generateRandomTargetShapes(center);
-            startTimer();
+            generateTargetShapes(center);
         }
 
-        function generateRandomTargetShapes(center) {
-            let gridPositions = [
-                { x: center.x - unit, y: center.y - unit },
-                { x: center.x - unit, y: center.y + unit },
-                { x: center.x + unit, y: center.y - unit },
-                { x: center.x + unit, y: center.y + unit },
-                { x: center.x, y: center.y },
+        function generateTargetShapes(center) {
+            let positions = [
+                { x: center.x - unit * 2, y: center.y - unit * 2 },
+                { x: center.x - unit * 2, y: center.y + unit * 2 },
+                { x: center.x - unit * 2, y: center.y },
+                { x: center.x + unit * 2, y: center.y - unit },
+                { x: center.x + unit * 2, y: center.y + unit },
+                { x: center.x + unit * 2, y: center.y },
+                { x: center.x, y: center.y - unit * 2 }
             ];
 
-            shuffleArray(gridPositions);
-
-            targetShapes = [
-                { ...gridPositions[0], type: 'triangle', size: unit * 2, angle: 0, color: color(0) },
-                { ...gridPositions[1], type: 'triangle', size: unit * 2, angle: 180, color: color(0) },
-                { ...gridPositions[2], type: 'square', size: unit * Math.sqrt(2), angle: 0, color: color(0) },
-                { ...gridPositions[3], type: 'parallelogram', size: unit, angle: 0, color: color(0) },
-                { ...gridPositions[4], type: 'triangle', size: unit, angle: 0, color: color(0) }
-            ];
+            targetShapes = shapes.map((shape, index) => ({
+                ...shape,
+                x: positions[index].x,
+                y: positions[index].y,
+                angle: floor(random(8)) * 45,
+                color: color(0),
+                locked: false
+            }));
         }
 
         function draw() {
             background(240);
 
+            // Draw target shapes
             for (let shape of targetShapes) {
                 drawShape(shape);
             }
 
+            // Draw movable shapes
             for (let shape of shapes) {
                 drawShape(shape);
             }
 
-            document.getElementById('timer').innerText = formatTime(timeLeft);
-            document.getElementById('score').innerText = `Score: ${score}/7`;
+            // Update timer
+            updateTimer();
         }
 
         function drawShape(shape) {
@@ -162,43 +228,44 @@
                     shape.y = targetShape.y;
                     shape.angle = targetShape.angle;
                     shape.locked = true;
+                    targetShape.color = shape.color;
                     score++;
+                    document.getElementById('score').innerText = `Score: ${score}/7`;
                 }
             }
         }
 
-        function startTimer() {
-            timer = setInterval(() => {
+        function updateTimer() {
+            if (frameCount % 60 === 0 && timeLeft > 0) {
                 timeLeft--;
-                if (timeLeft <= 0) {
-                    clearInterval(timer);
-                    revealTargetColors();
-                }
-            }, 1000);
+                let minutes = floor(timeLeft / 60);
+                let seconds = timeLeft % 60;
+                document.getElementById('timer').innerText = `Time: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+            }
+
+            if (timeLeft === 0) {
+                noLoop();
+                revealSolution();
+            }
         }
 
-        function formatTime(seconds) {
-            let minutes = Math.floor(seconds / 60);
-            let secs = seconds % 60;
-            return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
-        }
-
-        function revealTargetColors() {
+        function revealSolution() {
             for (let i = 0; i < targetShapes.length; i++) {
-                targetShapes[i].color = shapes.find(shape => shape.type === targetShapes[i].type).color;
+                targetShapes[i].color = shapes[i].color;
             }
+            redraw();
+            alert("Time's up! Here's the correct solution.");
         }
 
-        function windowResized() {
-            resizeCanvas(windowWidth, windowHeight);
-        }
+        window.addEventListener("load", () => {
+            const popup = document.getElementById("instruction-popup");
+            const startButton = document.getElementById("start-button");
 
-        function shuffleArray(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                let j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-        }
+            startButton.addEventListener("click", () => {
+                popup.style.display = "none";
+                loop(); 
+            });
+        });
     </script>
 </body>
 </html>
