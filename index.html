@@ -230,6 +230,11 @@
                     break;
                 }
             }
+            if(score == 7){
+                alert ("Hurray! You've completed it..!!!");
+                clearInterval(timer);
+                showSolution();
+            }
         }
 
         function startTimer() {
