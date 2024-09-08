@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shape-Match Mania</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        h1 {
+            color: #333;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 10px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #007BFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .button:hover {
+            background-color: #0056b3;
+        }
+        #p5-canvas {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Shape-Match Mania</h1>
+    <a href="beginner.html" class="button">Beginner</a>
+    <a href="legends.html" class="button">Legends</a>
+    <div id="p5-canvas"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <script>
+        function setup() {
+            let canvas = createCanvas(windowWidth, windowHeight);
+            canvas.parent('p5-canvas');
+            noLoop();
+        }
+
+        function draw() {
+            background(255);
+            for (let i = 0; i < 50; i++) {
+                let x = random(width);
+                let y = random(height);
+                let size = random(20, 80);
+                let shapeType = random(['circle', 'square', 'triangle']);
+                fill(random(255), random(255), random(255));
+                noStroke();
+                if (shapeType === 'circle') {
+                    ellipse(x, y, size, size);
+                } else if (shapeType === 'square') {
+                    rect(x, y, size, size);
+                } else if (shapeType === 'triangle') {
+                    triangle(x, y, x + size, y, x + size / 2, y - size);
+                }
+            }
+        }
+
+        function windowResized() {
+            resizeCanvas(windowWidth, windowHeight);
+            draw();
+        }
+    </script>
+</body>
+</html>
+
