@@ -11,7 +11,7 @@
             overflow: hidden;
             background-color: #f0f0f0;
         }
-        
+
         #instruction-popup {
             position: fixed;
             top: 0;
@@ -53,21 +53,22 @@
             color: white;
             border-radius: 5px;
         }
-        
+
         #timer {
             position: absolute;
             top: 10px;
             left: 50%;
             transform: translateX(-50%);
             font-size: 24px;
-             font-weight: bold;
+            font-weight: bold;
         }
+
         #score {
             position: absolute;
             top: 10px;
             right: 10px;
             font-size: 24px;
-             font-weight: bold;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -82,7 +83,7 @@
                 <li>Use the left and right arrow keys to rotate the shapes.</li>
             </ul>
             <p><strong>Scoring:</strong> For every correctly placed shape, your score will increase out of 7. The score is displayed in the top right corner.</p>
-            <p><strong>Timer:</strong> You have 2 minutes to complete the puzzle. The timer is displayed at the top center. When the time runs out, the correct colors will appear on the black shapes.</p>
+            <p><strong>Timer:</strong> You have 2 minutes to complete the puzzle. The timer is displayed at the top center. When the time runs out, the correct solution will be shown.</p>
             <p><strong>Winning:</strong> Successfully match all colored shapes to the black shapes before time runs out!</p>
             <button id="start-button">START NOW</button>
         </div>
@@ -95,71 +96,60 @@
         let targetShapes = [];
         let selectedShape = null;
         let offsetX, offsetY;
-        let unit = 100; 
+        let unit = 70; // eee unit area maths chatgpt de aane
         let score = 0;
         let timer;
-        let timeLeft = 120; 
+        let timeLeft = 120;
 
         function setup() {
             createCanvas(windowWidth, windowHeight);
             let center = { x: width / 2, y: height / 2 };
+            let squareSize = 500;
+
+            // coordinates set akaan shramichathaa
+            let startX = center.x - squareSize / 2;
+            let startY = center.y - squareSize / 2;
+
+            // black canvas inte shapes
+            targetShapes = [
+                { x: startX + unit * 3.5, y: startY + unit * 1.5, type: 'triangle', size: unit * 2, angle: 0, color: color(0) },
+                { x: startX + unit * 3.5, y: startY + unit * 5.5, type: 'triangle', size: unit * 2, angle: 180, color: color(0) },
+                { x: startX + unit * 2.5, y: startY + unit * 3.5, type: 'triangle', size: unit * Math.sqrt(2), angle: -45, color: color(0) },
+                { x: startX + unit * 4.5, y: startY + unit * 3.5, type: 'triangle', size: unit * Math.sqrt(2), angle: 45, color: color(0) },
+                { x: startX + unit * 1.5, y: startY + unit * 2.5, type: 'triangle', size: unit, angle: 0, color: color(0) },
+                { x: startX + unit * 1.5, y: startY + unit * 4.5, type: 'triangle', size: unit, angle: -90, color: color(0) },
+                { x: startX + unit * 2.5, y: startY + unit * 1.5, type: 'square', size: unit, angle: 0, color: color(0) }
+            ];
 
             shapes = [
                 { x: center.x - unit * 4, y: center.y - unit * 2, type: 'triangle', size: unit * 2, angle: 45, color: color(34, 139, 34) },
                 { x: center.x - unit * 4, y: center.y + unit * 2, type: 'triangle', size: unit * 2, angle: 225, color: color(220, 20, 60) },
                 { x: center.x - unit * 4, y: center.y, type: 'triangle', size: unit * Math.sqrt(2), angle: 45, color: color(0, 0, 139) },
-                { x: center.x + unit * 4, y: center.y - unit, type: 'triangle', size: unit, angle: 45, color: color(148, 0, 211) },
+                { x: center.x + unit * 4, y: center.y - unit, type: 'triangle', size: unit * Math.sqrt(2), angle: 45, color: color(148, 0, 211) },
                 { x: center.x + unit * 4, y: center.y + unit, type: 'triangle', size: unit, angle: -135, color: color(220, 20, 60) },
-                { x: center.x + unit * 4, y: center.y, type: 'square', size: unit * Math.sqrt(2), angle: 45, color: color(255, 215, 0) },
-                { x: center.x, y: center.y + unit * 4, type: 'parallelogram', size: unit, angle: -45, color: color(0, 0, 205) }
+                { x: center.x + unit * 4, y: center.y, type: 'square', size: unit, angle: 45, color: color(255, 215, 0) },
+                { x: center.x, y: center.y + unit * 4, type: 'triangle', size: unit, angle: 0, color: color(0, 0, 205) }
             ];
 
-            generateRandomTargetShapes(center);
             startTimer();
-        }
-
-        function generateRandomTargetShapes(center) {
-            let gridPositions = [
-                { x: center.x - unit, y: center.y - unit },
-                { x: center.x - unit, y: center.y + unit },
-                { x: center.x + unit, y: center.y - unit },
-                { x: center.x + unit, y: center.y + unit },
-                { x: center.x, y: center.y },
-            ];
-
-            shuffleArray(gridPositions);
-
-            targetShapes = [
-                { ...gridPositions[0], type: 'triangle', size: unit * 2, angle: 0, color: color(0) },
-                { ...gridPositions[1], type: 'triangle', size: unit * 2, angle: 180, color: color(0) },
-                { ...gridPositions[2], type: 'square', size: unit * Math.sqrt(2), angle: 0, color: color(0) },
-                { ...gridPositions[3], type: 'parallelogram', size: unit, angle: 0, color: color(0) },
-                { ...gridPositions[4], type: 'triangle', size: unit, angle: 0, color: color(0) }
-            ];
-        }
-        
-        function clearShapes() {
-            createCanvas(windowWidth, windowHeight);
-            let center = { x: width / 2, y: height / 2 };
-
-            shapes = [
-                {  },
-                {  },
-                {  },
-                {  },
-                {  },
-                {  },
-                {  }
-            ];
         }
 
         function draw() {
             background(240);
 
+            // canvas inte box
+            let center = { x: width / 2, y: height / 2 };
+            let squareSize = 500;
+            stroke(0);  
+            noFill();   
+            rect(center.x - squareSize / 2, center.y - squareSize / 2, squareSize, squareSize);
+
+           
             for (let shape of targetShapes) {
                 drawShape(shape);
             }
 
+            
             for (let shape of shapes) {
                 drawShape(shape);
             }
@@ -175,12 +165,10 @@
             fill(shape.color);
             noStroke();
             if (shape.type === 'triangle') {
-                triangle(0, -shape.size, -shape.size, shape.size, shape.size, shape.size);
+                triangle(0, -shape.size/2, -shape.size/2, shape.size/2, shape.size/2, shape.size/2);
             } else if (shape.type === 'square') {
                 rectMode(CENTER);
                 square(0, 0, shape.size);
-            } else if (shape.type === 'parallelogram') {
-                quad(-shape.size, shape.size / 2, 0, -shape.size / 2, shape.size, -shape.size / 2, 0, shape.size / 2);
             }
             pop();
         }
@@ -216,25 +204,31 @@
         function keyPressed() {
             if (selectedShape && !selectedShape.locked) {
                 if (keyCode === LEFT_ARROW) {
-                    selectedShape.angle = (selectedShape.angle - 45 + 360) % 360;
+                    selectedShape.angle -= 15;
                 } else if (keyCode === RIGHT_ARROW) {
-                    selectedShape.angle = (selectedShape.angle + 45) % 360;
+                    selectedShape.angle += 15;
                 }
                 checkPlacement(selectedShape);
             }
         }
 
+        // ivde aan full prashnam.......shape canvas il stick aavunnilla
+        // ee last cheythappo canvas inte shapes dimension il entho prashnam und
         function checkPlacement(shape) {
-            let targetShape = targetShapes.find(t => t.type === shape.type && t.size === shape.size);
-            if (targetShape) {
-                let distanceOK = dist(shape.x, shape.y, targetShape.x, targetShape.y) < unit / 4;
-                let angleOK = abs(shape.angle - targetShape.angle) % 360 < 5 || abs(shape.angle - targetShape.angle) % 360 > 355;
-                if (distanceOK && angleOK) {
-                    shape.x = targetShape.x;
-                    shape.y = targetShape.y;
-                    shape.angle = targetShape.angle;
+            for (let target of targetShapes) {
+                if (
+                    abs(shape.x - target.x) < 10 &&
+                    abs(shape.y - target.y) < 10 &&
+                    abs(shape.angle - target.angle) < 10 &&
+                    shape.type === target.type &&
+                    shape.size === target.size
+                ) {
+                    shape.x = target.x;
+                    shape.y = target.y;
+                    shape.angle = target.angle;
                     shape.locked = true;
                     score++;
+                    break;
                 }
             }
         }
@@ -244,8 +238,7 @@
                 timeLeft--;
                 if (timeLeft <= 0) {
                     clearInterval(timer);
-                    revealTargetColors();
-                    clearShapes();
+                    showSolution();
                 }
             }, 1000);
         }
@@ -256,30 +249,26 @@
             return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
         }
 
-        function revealTargetColors() {
-            for (let i = 0; i < targetShapes.length; i++) {
-                targetShapes[i].color = shapes.find(shape => shape.type === targetShapes[i].type).color;
-            }
-        }
 
-        function windowResized() {
-            resizeCanvas(windowWidth, windowHeight);
-        }
-
-        function shuffleArray(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                let j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-        }
-        window.addEventListener("load", () => {
-            const popup = document.getElementById("instruction-popup");
-            const startButton = document.getElementById("start-button");
-            startButton.addEventListener("click", () => {
-                popup.style.display = "none";
-                loop(); 
+        // ith full azhich paniyanam......
+        // either we give black canvas, or we keep the colored shapes just like that and ask it stay faded for 2mins and then pop all the colors
+        function showSolution() {
+            shapes.forEach(shape => {
+                let target = targetShapes.find(t => t.type === shape.type && t.size === shape.size);
+                if (target) {
+                    shape.x = target.x;
+                    shape.y = target.y;
+                    shape.angle = target.angle;
+                    shape.locked = true;
+                }
             });
-        });    
+        }
+
+        // timer starts before this button is clicked...ive no idea how to fix that
+        document.getElementById('start-button').addEventListener('click', function () {
+            document.getElementById('instruction-popup').style.display = 'none';
+            loop(); 
+        });
     </script>
 </body>
 </html>
