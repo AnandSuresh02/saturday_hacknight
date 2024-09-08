@@ -106,7 +106,7 @@
         let selectedShape = null;
         let offsetX, offsetY;
         let unit = 70;
-        let score = 0;  // Score starts from 0
+        let score = 0;
         let timer;
         let timeLeft = 120;
         let gameOver = false;
@@ -115,19 +115,7 @@
             createCanvas(windowWidth, windowHeight);
             let center = { x: width / 2, y: height / 2 };
             let squareSize = 500;
-
-            let startX = center.x - squareSize / 2;
-            let startY = center.y - squareSize / 2;
-
-            targetShapes = [
-                { x: startX + unit * 3.5, y: startY + unit * 1.5, type: 'triangle', size: unit * 2, angle: 0, color: color(0) },
-                { x: startX + unit * 3.5, y: startY + unit * 5.5, type: 'triangle', size: unit * 2, angle: 180, color: color(0) },
-                { x: startX + unit * 2.5, y: startY + unit * 3.5, type: 'triangle', size: unit * Math.sqrt(2), angle: -45, color: color(0) },
-                { x: startX + unit * 4.5, y: startY + unit * 3.5, type: 'triangle', size: unit * Math.sqrt(2), angle: 45, color: color(0) },
-                { x: startX + unit * 1.5, y: startY + unit * 2.5, type: 'triangle', size: unit, angle: 0, color: color(0) },
-                { x: startX + unit * 1.5, y: startY + unit * 4.5, type: 'triangle', size: unit, angle: -90, color: color(0) },
-                { x: startX + unit * 2.5, y: startY + unit * 1.5, type: 'square', size: unit, angle: 0, color: color(0) }
-            ];
+            targetShapes = generateRandomPositions(center, unit);
 
             shapes = [
                 { x: center.x - unit * 4, y: center.y - unit * 2, type: 'triangle', size: unit * 2, angle: 45, color: color(34, 139, 34) },
@@ -158,7 +146,7 @@
             }
 
             document.getElementById('timer').innerText = formatTime(timeLeft);
-            document.getElementById('score').innerText = `Score: ${score}/7`;  // Score updated in the display
+            document.getElementById('score').innerText = `Score: ${score}/7`;  
         }
 
         function drawShape(shape) {
@@ -168,7 +156,7 @@
             fill(shape.color);
             noStroke();
             if (shape.type === 'triangle') {
-                triangle(0, -shape.size/2, -shape.size/2, shape.size/2, shape.size/2, shape.size/2);
+                triangle(0, -shape.size / 2, -shape.size / 2, shape.size / 2, shape.size / 2, shape.size / 2);
             } else if (shape.type === 'square') {
                 rectMode(CENTER);
                 square(0, 0, shape.size);
@@ -228,7 +216,7 @@
                     shape.y = target.y;
                     shape.angle = target.angle;
                     shape.locked = true;
-                    score++;  // Increment score when shape is placed correctly
+                    score++;  
                     break;
                 }
             }
@@ -271,6 +259,55 @@
 
         function showWonPopup() {
             document.getElementById('won-popup').style.display = 'flex';
+        }
+
+        function generateRandomPositions(center, unit) {
+            let positions = [];
+            let directions = [
+                { dx: unit, dy: 0 },   // Right
+                { dx: -unit, dy: 0 },  // Left
+                { dx: 0, dy: unit },   // Down
+                { dx: 0, dy: -unit }   // Up
+            ];
+
+            
+            positions.push({
+                x: center.x,
+                y: center.y,
+                type: 'square',
+                size: unit,
+                angle: 0,
+                color: 'black'
+            });
+
+            for (let i = 1; i < 7; i++) {
+                let placed = false;
+
+                while (!placed) {
+                    let randomIndex = Math.floor(Math.random() * positions.length);
+                    let baseShape = positions[randomIndex];
+
+                    let randomDirection = random(directions);
+                    let newX = baseShape.x + randomDirection.dx;
+                    let newY = baseShape.y + randomDirection.dy;
+
+                    let overlap = positions.some(p => dist(p.x, p.y, newX, newY) < unit);
+
+                    if (!overlap) {
+                        positions.push({
+                            x: newX,
+                            y: newY,
+                            type: random(['triangle', 'square']),
+                            size: random([unit, unit * Math.sqrt(2), unit * 2]),
+                            angle: random([0, 45, -45, 90]),
+                            color: 'black'
+                        });
+                        placed = true;
+                    }
+                }
+            }
+
+            return positions;
         }
 
         document.getElementById('start-button').addEventListener('click', function () {
