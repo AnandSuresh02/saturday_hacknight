@@ -131,7 +131,6 @@
                 { x: center.x, y: center.y + unit * 4, type: 'triangle', size: unit, angle: 0, color: color(0, 0, 205) }
             ];
 
-            startTimer();
         }
 
         function draw() {
@@ -264,10 +263,11 @@
             });
         }
 
-        // timer starts before this button is clicked...ive no idea how to fix that
+        // timer starts before this button is clicked...ive no idea how to fix that - FIXED!
         document.getElementById('start-button').addEventListener('click', function () {
             document.getElementById('instruction-popup').style.display = 'none';
-            loop(); 
+            loop();
+            startTimer();
         });
     </script>
 </body>
