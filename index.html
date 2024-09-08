@@ -114,17 +114,18 @@
         function setup() {
             createCanvas(windowWidth, windowHeight);
             let center = { x: width / 2, y: height / 2 };
-            let squareSize = 500;
-            targetShapes = generateRandomPositions(center, unit);
 
+            targetShapes = randomizePositions(center, unit);
+
+            
             shapes = [
-                { x: center.x - unit * 4, y: center.y - unit * 2, type: 'triangle', size: unit * 2, angle: 45, color: color(34, 139, 34) },
-                { x: center.x - unit * 4, y: center.y + unit * 2, type: 'triangle', size: unit * 2, angle: 225, color: color(220, 20, 60) },
-                { x: center.x - unit * 4, y: center.y, type: 'triangle', size: unit * Math.sqrt(2), angle: 45, color: color(0, 0, 139) },
-                { x: center.x + unit * 4, y: center.y - unit, type: 'triangle', size: unit * Math.sqrt(2), angle: 45, color: color(148, 0, 211) },
-                { x: center.x + unit * 4, y: center.y + unit, type: 'triangle', size: unit, angle: -135, color: color(220, 20, 60) },
-                { x: center.x + unit * 4, y: center.y, type: 'square', size: unit, angle: 45, color: color(255, 215, 0) },
-                { x: center.x, y: center.y + unit * 4, type: 'triangle', size: unit, angle: 0, color: color(0, 0, 205) }
+                { x: center.x - unit * 4, y: center.y - unit * 2, type: 'triangle', size: unit * 2, angle: targetShapes[0].angle, color: color(34, 139, 34) },
+                { x: center.x - unit * 4, y: center.y + unit * 2, type: 'triangle', size: unit * 2, angle: targetShapes[1].angle, color: color(220, 20, 60) },
+                { x: center.x - unit * 4, y: center.y, type: 'triangle', size: unit * Math.sqrt(2), angle: targetShapes[2].angle, color: color(0, 0, 139) },
+                { x: center.x + unit * 4, y: center.y - unit, type: 'triangle', size: unit * Math.sqrt(2), angle: targetShapes[3].angle, color: color(148, 0, 211) },
+                { x: center.x + unit * 4, y: center.y + unit, type: 'triangle', size: unit, angle: targetShapes[4].angle, color: color(220, 20, 60) },
+                { x: center.x + unit * 4, y: center.y, type: 'square', size: unit, angle: targetShapes[5].angle, color: color(255, 215, 0) },
+                { x: center.x, y: center.y + unit * 4, type: 'triangle', size: unit, angle: targetShapes[6].angle, color: color(0, 0, 205) }
             ];
         }
 
@@ -132,10 +133,8 @@
             background(240);
 
             let center = { x: width / 2, y: height / 2 };
-            let squareSize = 500;
             stroke(0);  
             noFill();   
-            rect(center.x - squareSize / 2, center.y - squareSize / 2, squareSize, squareSize);
 
             for (let shape of targetShapes) {
                 drawShape(shape);
@@ -217,13 +216,12 @@
                     shape.angle = target.angle;
                     shape.locked = true;
                     score++;  
+                    if (score === 7) {
+                        showWonPopup();
+                        noLoop();
+                    }
                     break;
                 }
-            }
-            if (score === 7 && !gameOver) {
-                gameOver = true;
-                showWonPopup();
-                clearInterval(timer);
             }
         }
 
@@ -261,7 +259,8 @@
             document.getElementById('won-popup').style.display = 'flex';
         }
 
-        function generateRandomPositions(center, unit) {
+        // ivde aan shapes inte orientation maattendath
+        function randomizePositions(center, unit) {
             let positions = [];
             let directions = [
                 { dx: unit, dy: 0 },   // Right
@@ -270,36 +269,38 @@
                 { dx: 0, dy: -unit }   // Up
             ];
 
-            
+            let shapesInfo = [
+                { type: 'triangle', size: unit * 2, angle: random([0, 45, 90, 135, 180, 225, 270]) },
+                { type: 'triangle', size: unit * 2, angle: random([0, 45, 90, 135, 180, 225, 270]) },
+                { type: 'triangle', size: unit * Math.sqrt(2), angle: random([0, 45, 90, 135, 180, 225, 270]) },
+                { type: 'triangle', size: unit * Math.sqrt(2), angle: random([0, 45, 90, 135, 180, 225, 270]) },
+                { type: 'triangle', size: unit, angle: random([0, 45, 90, 135, 180, 225, 270]) },
+                { type: 'square', size: unit, angle: random([0, 45, 90, 135, 180, 225, 270]) },
+                { type: 'triangle', size: unit, angle: random([0, 45, 90, 135, 180, 225, 270]) }
+            ];
+
             positions.push({
                 x: center.x,
                 y: center.y,
-                type: 'square',
-                size: unit,
-                angle: 0,
+                ...shapesInfo[0],
                 color: 'black'
             });
 
-            for (let i = 1; i < 7; i++) {
+            for (let i = 1; i < shapesInfo.length; i++) {
                 let placed = false;
-
                 while (!placed) {
                     let randomIndex = Math.floor(Math.random() * positions.length);
                     let baseShape = positions[randomIndex];
-
                     let randomDirection = random(directions);
                     let newX = baseShape.x + randomDirection.dx;
                     let newY = baseShape.y + randomDirection.dy;
 
                     let overlap = positions.some(p => dist(p.x, p.y, newX, newY) < unit);
-
                     if (!overlap) {
                         positions.push({
                             x: newX,
                             y: newY,
-                            type: random(['triangle', 'square']),
-                            size: random([unit, unit * Math.sqrt(2), unit * 2]),
-                            angle: random([0, 45, -45, 90]),
+                            ...shapesInfo[i],
                             color: 'black'
                         });
                         placed = true;
