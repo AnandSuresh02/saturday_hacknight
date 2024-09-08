@@ -12,7 +12,7 @@
             background-color: #f0f0f0;
         }
 
-        #instruction-popup {
+        #instruction-popup, #won-popup {
             position: fixed;
             top: 0;
             left: 0;
@@ -25,7 +25,7 @@
             z-index: 10;
         }
 
-        #popup-content {
+        #popup-content, #won-popup-content {
             background: white;
             padding: 20px;
             border-radius: 10px;
@@ -34,7 +34,7 @@
             max-width: 80%;
         }
 
-        #popup-content h2 {
+        #popup-content h2, #won-popup-content h2 {
             text-align: center;
         }
 
@@ -42,7 +42,7 @@
             padding-left: 20px;
         }
 
-        #start-button {
+        #start-button, #restart-button {
             display: block;
             margin: 20px auto 0;
             padding: 10px 20px;
@@ -88,6 +88,15 @@
             <button id="start-button">START NOW</button>
         </div>
     </div>
+
+    <div id="won-popup" style="display:none;">
+        <div id="won-popup-content">
+            <h2>Congratulations!</h2>
+            <p>You won the game by correctly matching all shapes before time ran out!</p>
+            <button id="restart-button">Restart</button>
+        </div>
+    </div>
+
     <div id="timer">2:00</div>
     <div id="score">Score: 0/7</div>
 
@@ -96,21 +105,20 @@
         let targetShapes = [];
         let selectedShape = null;
         let offsetX, offsetY;
-        let unit = 70; // eee unit area maths chatgpt de aane
-        let score = 0;
+        let unit = 70;
+        let score = 0;  // Score starts from 0
         let timer;
         let timeLeft = 120;
+        let gameOver = false;
 
         function setup() {
             createCanvas(windowWidth, windowHeight);
             let center = { x: width / 2, y: height / 2 };
             let squareSize = 500;
 
-            // coordinates set akaan shramichathaa
             let startX = center.x - squareSize / 2;
             let startY = center.y - squareSize / 2;
 
-            // black canvas inte shapes
             targetShapes = [
                 { x: startX + unit * 3.5, y: startY + unit * 1.5, type: 'triangle', size: unit * 2, angle: 0, color: color(0) },
                 { x: startX + unit * 3.5, y: startY + unit * 5.5, type: 'triangle', size: unit * 2, angle: 180, color: color(0) },
@@ -130,31 +138,27 @@
                 { x: center.x + unit * 4, y: center.y, type: 'square', size: unit, angle: 45, color: color(255, 215, 0) },
                 { x: center.x, y: center.y + unit * 4, type: 'triangle', size: unit, angle: 0, color: color(0, 0, 205) }
             ];
-
         }
 
         function draw() {
             background(240);
 
-            // canvas inte box
             let center = { x: width / 2, y: height / 2 };
             let squareSize = 500;
             stroke(0);  
             noFill();   
             rect(center.x - squareSize / 2, center.y - squareSize / 2, squareSize, squareSize);
 
-           
             for (let shape of targetShapes) {
                 drawShape(shape);
             }
 
-            
             for (let shape of shapes) {
                 drawShape(shape);
             }
 
             document.getElementById('timer').innerText = formatTime(timeLeft);
-            document.getElementById('score').innerText = `Score: ${score}/7`;
+            document.getElementById('score').innerText = `Score: ${score}/7`;  // Score updated in the display
         }
 
         function drawShape(shape) {
@@ -211,8 +215,6 @@
             }
         }
 
-        // ivde aan full prashnam.......shape canvas il stick aavunnilla
-        // ee last cheythappo canvas inte shapes dimension il entho prashnam und
         function checkPlacement(shape) {
             for (let target of targetShapes) {
                 if (
@@ -226,14 +228,14 @@
                     shape.y = target.y;
                     shape.angle = target.angle;
                     shape.locked = true;
-                    score++;
+                    score++;  // Increment score when shape is placed correctly
                     break;
                 }
             }
-            if(score == 7){
-                alert ("Hurray! You've completed it..!!!");
+            if (score === 7 && !gameOver) {
+                gameOver = true;
+                showWonPopup();
                 clearInterval(timer);
-                showSolution();
             }
         }
 
@@ -243,6 +245,7 @@
                 if (timeLeft <= 0) {
                     clearInterval(timer);
                     showSolution();
+                    gameOver = true;
                 }
             }, 1000);
         }
@@ -253,13 +256,11 @@
             return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
         }
 
-
-        // ith full azhich paniyanam......
-        // either we give black canvas, or we keep the colored shapes just like that and ask it stay faded for 2mins and then pop all the colors
         function showSolution() {
             shapes.forEach(shape => {
                 let target = targetShapes.find(t => t.type === shape.type && t.size === shape.size);
                 if (target) {
+                    shape.color = target.color;
                     shape.x = target.x;
                     shape.y = target.y;
                     shape.angle = target.angle;
@@ -268,11 +269,18 @@
             });
         }
 
-        // timer starts before this button is clicked...ive no idea how to fix that - FIXED!
+        function showWonPopup() {
+            document.getElementById('won-popup').style.display = 'flex';
+        }
+
         document.getElementById('start-button').addEventListener('click', function () {
             document.getElementById('instruction-popup').style.display = 'none';
             loop();
             startTimer();
+        });
+
+        document.getElementById('restart-button').addEventListener('click', function () {
+            window.location.reload();
         });
     </script>
 </body>
