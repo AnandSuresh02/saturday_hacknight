@@ -88,8 +88,8 @@
             <button id="start-button">START NOW</button>
         </div>
     </div>
-    <div id="timer">2:00</div>
-    <div id="score">Score: 0/7</div>
+    <div id="timer">5:00</div>
+    <div id="score">Score: 0/3</div>
 
     <script>
         let shapes = [];
@@ -99,7 +99,7 @@
         let unit = 50;
         let score = 0;
         let timer;
-        let timeLeft = 120;
+        let timeLeft = 300;
         let gridSize = 7;
         let centerBox;
 
@@ -200,7 +200,7 @@
             }
 
             document.getElementById('timer').innerText = formatTime(timeLeft);
-            document.getElementById('score').innerText = `Score: ${score}/7`;
+            document.getElementById('score').innerText = `Score: ${score}/3`;
         }
 
         function drawShape(shape) {
