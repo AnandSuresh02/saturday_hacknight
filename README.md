@@ -26,4 +26,8 @@ Something different from the classic Tangram
 No configuration required
    
 ## How to Run
-Open `index.html` in a browser
+To locally run, clone this repository and open `index.html` in a browser.
+
+OR
+
+Go to this link: [Click here](https://anandsuresh02.github.io/saturday_hacknight/).
